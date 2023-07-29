@@ -1,0 +1,409 @@
+{
+	"info": {
+		"_postman_id": "6457ac45-5c79-4883-9012-a685474bc2cc",
+		"name": "Second_Project",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28551494"
+	},
+	"item": [
+		{
+			"name": "Create Booking",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//copying all data from response body\r",
+							"var response_body = pm.response.json();\r",
+							"\r",
+							"//Creating a function for auto generated id \r",
+							"pm.environment.set(\"booking_id\", response_body.bookingid)\r",
+							"\r",
+							"//verifying Status code if is it 200 or not\r",
+							"pm.test(\"Status code is 200\", function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"})\r",
+							"\r",
+							"pm.test(\"verifying response time is less than 300ms\", function(){\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(400);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//DYNAMIC CREATION LIST FOR ALL VARIABLES\r",
+							"//First Name\r",
+							"var first_name = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+							"pm.environment.set(\"firstname\", first_name); //calling enivorment to get firstname in enviroment\r",
+							"\r",
+							"//Last Name\r",
+							"var last_name = pm.variables.replaceIn(\"{{$randomLastName}}\");\r",
+							"pm.environment.set(\"lastname\", last_name); //calling enivorment to get lastname in enviroment\r",
+							"\r",
+							"//Total Price\r",
+							"var total_price = pm.variables.replaceIn(\"{{$randomInt}}\");\r",
+							"pm.environment.set(\"totalprice\", total_price); //calling enivorment to get totalprice in enviroment\r",
+							"\r",
+							"//Deposit Paid\r",
+							"var deposit_paid = pm.variables.replaceIn(\"{{$randomBoolean}}\");\r",
+							"pm.environment.set(\"depositpaid\", deposit_paid);\r",
+							"\r",
+							"//Additional Needs\r",
+							"var additional_needs = pm.variables.replaceIn(\"{{$randomProduct}}\");\r",
+							"pm.environment.set(\"additionalneeds\", additional_needs);\r",
+							"\r",
+							"//Checkin & Check out\r",
+							"const moment = require(\"moment\");       // moment is a library for date and time\r",
+							"const today = moment();\r",
+							"pm.environment.set(\"checkin\", today.format(\"YYYY-MM-DD\"));\r",
+							"pm.environment.set(\"checkout\", today.add(5,'d').format(\"YYYY-MM-DD\"));\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"firstname\" : \"{{firstname}}\",\r\n\"lastname\" : \"{{lastname}}\",\r\n\"totalprice\" : {{totalprice}},\r\n\"depositpaid\" : {{depositpaid}},\r\n\"bookingdates\" : {\r\n\"checkin\" : \"{{checkin}}\",\r\n\"checkout\" : \"{{checkout}}\"\r\n},\r\n\"additionalneeds\" : \"{{additionalneeds}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/booking",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"booking"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Booking",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//copying all data from response body\r",
+							"var response_body = pm.response.json();\r",
+							"\r",
+							"/*We are checking test result for response body and enivorment body. We can do this in 2 way's. 1 is manual and 2nd one is dynamic. For testing purpose we are doing only 1 manual and other will be on dynamic*/\r",
+							"\r",
+							"//Manual test \r",
+							"pm.test(\"First name is matched with Enviroment\" , function(){\r",
+							"    pm.expect(response_body.firstname).to.equal(pm.environment.get(\"firstname\"));\r",
+							"})\r",
+							"\r",
+							"// Now we will do all in Dynamic way\r",
+							"\r",
+							"//first name\r",
+							"pm.test(\"Verify first Name \" + response_body.firstname + \" is equal to \" + pm.environment.get(\"firstname\"), function(){\r",
+							"    pm.expect(response_body.firstname).to.equal(pm.environment.get(\"firstname\"));\r",
+							"});\r",
+							"\r",
+							"//last name\r",
+							"pm.test(\"Verify last Name \" + response_body.lastname + \" is equal to \" + pm.environment.get(\"lastname\"), function(){\r",
+							"    pm.expect(response_body.lastname).to.equal(pm.environment.get(\"lastname\"));\r",
+							"});\r",
+							"\r",
+							"//total price         (here we use parseInt to Convert the environment variable to a number)\r",
+							"pm.test(\"Verify total price \" + response_body.totalprice + \" is equal to \" + pm.environment.get(\"totalprice\"), function(){\r",
+							"    pm.expect(response_body.totalprice).to.equal(parseInt(pm.environment.get(\"totalprice\")));\r",
+							"});\r",
+							"\r",
+							"//Additional needs\r",
+							"pm.test(\"Verify additional needs \" + response_body.additionalneeds + \" is equal to \" + pm.environment.get(\"additionalneeds\"), function(){\r",
+							"    pm.expect(response_body.additionalneeds).to.equal(pm.environment.get(\"additionalneeds\"));\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/booking/{{booking_id}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"booking",
+						"{{booking_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Authentication",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Doing Authentication in Dynamic\r",
+							"var response_body = pm.response.json();\r",
+							"pm.environment.set(\"token\", response_body.token);\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"username\": \"admin\",\r\n\"password\": \"password123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/auth",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Booking",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//DYNAMIC CREATION LIST FOR ALL VARIABLES\r",
+							"//First Name\r",
+							"var first_name = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+							"pm.environment.set(\"firstname\", first_name); //calling enivorment to get firstname in enviroment\r",
+							"\r",
+							"//Last Name\r",
+							"var last_name = pm.variables.replaceIn(\"{{$randomLastName}}\");\r",
+							"pm.environment.set(\"lastname\", last_name); //calling enivorment to get lastname in enviroment\r",
+							"\r",
+							"//Total Price\r",
+							"var total_price = pm.variables.replaceIn(\"{{$randomInt}}\");\r",
+							"pm.environment.set(\"totalprice\", total_price); //calling enivorment to get totalprice in enviroment\r",
+							"\r",
+							"//Deposit Paid\r",
+							"var deposit_paid = pm.variables.replaceIn(\"{{$randomBoolean}}\");\r",
+							"pm.environment.set(\"depositpaid\", deposit_paid);\r",
+							"\r",
+							"//Additional Needs\r",
+							"var additional_needs = pm.variables.replaceIn(\"{{$randomProduct}}\");\r",
+							"pm.environment.set(\"additionalneeds\", additional_needs);\r",
+							"\r",
+							"//Checkin & Check out\r",
+							"const moment = require(\"moment\");       // moment is a library for date and time\r",
+							"const today = moment();\r",
+							"pm.environment.set(\"checkin\", today.format(\"YYYY-MM-DD\"));\r",
+							"pm.environment.set(\"checkout\", today.add(5,'d').format(\"YYYY-MM-DD\"));\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "token=\"{{token}}\"",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"firstname\" : \"{{firstname}}\",\r\n\"lastname\" : \"{{lastname}}\",\r\n\"totalprice\" : {{totalprice}},\r\n\"depositpaid\" : {{depositpaid}},\r\n\"bookingdates\" : {\r\n\"checkin\" : \"{{checkin}}\",\r\n\"checkout\" : \"{{checkout}}\"\r\n},\r\n\"additionalneeds\" : \"{{additionalneeds}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/booking/{{booking_id}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"booking",
+						"{{booking_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Booking After Update",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//copying all data from response body\r",
+							"var response_body = pm.response.json();\r",
+							"\r",
+							"/*We are checking test result for response body and enivorment body. We can do this in 2 way's. 1 is manual and 2nd one is dynamic. For testing purpose we are doing only 1 manual and other will be on dynamic*/\r",
+							"\r",
+							"//Manual test \r",
+							"pm.test(\"First name is matched with Enviroment\" , function(){\r",
+							"    pm.expect(response_body.firstname).to.equal(pm.environment.get(\"firstname\"));\r",
+							"})\r",
+							"\r",
+							"// Now we will do all in Dynamic way\r",
+							"\r",
+							"//first name\r",
+							"pm.test(\"Verify first Name \" + response_body.firstname + \" is equal to \" + pm.environment.get(\"firstname\"), function(){\r",
+							"    pm.expect(response_body.firstname).to.equal(pm.environment.get(\"firstname\"));\r",
+							"});\r",
+							"\r",
+							"//last name\r",
+							"pm.test(\"Verify last Name \" + response_body.lastname + \" is equal to \" + pm.environment.get(\"lastname\"), function(){\r",
+							"    pm.expect(response_body.lastname).to.equal(pm.environment.get(\"lastname\"));\r",
+							"});\r",
+							"\r",
+							"//total price         (here we use parseInt to Convert the environment variable to a number)\r",
+							"pm.test(\"Verify total price \" + response_body.totalprice + \" is equal to \" + pm.environment.get(\"totalprice\"), function(){\r",
+							"    pm.expect(response_body.totalprice).to.equal(parseInt(pm.environment.get(\"totalprice\")));\r",
+							"});\r",
+							"\r",
+							"//Additional needs\r",
+							"pm.test(\"Verify additional needs \" + response_body.additionalneeds + \" is equal to \" + pm.environment.get(\"additionalneeds\"), function(){\r",
+							"    pm.expect(response_body.additionalneeds).to.equal(pm.environment.get(\"additionalneeds\"));\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/booking/{{booking_id}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"booking",
+						"{{booking_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Booking",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//copying all data from response body\r",
+							"/*var response_body = pm.response.json();\r",
+							"pm.environment.get(\"delete\", response_body.delete)*/\r",
+							"\r",
+							"//verifying Status code if is it 200 or not\r",
+							"pm.test(\"Status code is 200\", function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "token=\"{{token}}\"",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/booking/{{booking_id}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"booking",
+						"{{booking_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Booking After Cancel",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//copying all data from response body\r",
+							"/*var response_body = pm.response.json();\r",
+							"pm.environment.get(\"delete\", response_body.delete)*/\r",
+							"\r",
+							"//verifying Status code if is it 200 or not\r",
+							"pm.test(\"Status code is 200\", function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "token=\"{{token}}\"",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/booking/{{booking_id}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"booking",
+						"{{booking_id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
